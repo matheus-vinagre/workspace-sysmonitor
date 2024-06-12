@@ -3,7 +3,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
+#include "linux_parser.h"
 #include "format.h"
 #include "ncurses_display.h"
 #include "system.h"
@@ -35,7 +35,7 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   mvwprintw(window, ++row, 2, "CPU: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
-  wprintw(window, ProgressBar(system.Cpu().Utilization()).c_str());
+  wprintw(window, ProgressBar(system.Cpu()[0].Utilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
@@ -46,7 +46,7 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
             ("Total Processes: " + to_string(system.TotalProcesses())).c_str());
   mvwprintw(
       window, ++row, 2,
-      ("Running Processes: " + to_string(system.RunningProcesses())).c_str());
+  ("Running Processes: " + to_string(system.RunningProcesses())).c_str());
   mvwprintw(window, ++row, 2,
             ("Up Time: " + Format::ElapsedTime(system.UpTime())).c_str());
   wrefresh(window);
@@ -79,7 +79,7 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
     mvwprintw(window, row, time_column,
               Format::ElapsedTime(processes[i].UpTime()).c_str());
     mvwprintw(window, row, command_column,
-              processes[i].Command().substr(0, window->_maxx - 46).c_str());
+              processes[i].Command().substr(0, getmaxx(window) - 46).c_str());
   }
 }
 
@@ -92,13 +92,14 @@ void NCursesDisplay::Display(System& system, int n) {
   int x_max{getmaxx(stdscr)};
   WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
   WINDOW* process_window =
-      newwin(3 + n, x_max - 1, system_window->_maxy + 1, 0);
+      newwin(3 + n, x_max - 1, getmaxy(system_window) + 1, 0);
 
   while (1) {
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     box(system_window, 0, 0);
     box(process_window, 0, 0);
+    LinuxParser::ProcStatParsin(); //-------------******-----------------
     DisplaySystem(system, system_window);
     DisplayProcesses(system.Processes(), process_window, n);
     wrefresh(system_window);

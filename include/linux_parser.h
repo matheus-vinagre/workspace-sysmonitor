@@ -1,6 +1,8 @@
 #ifndef SYSTEM_PARSER_H
 #define SYSTEM_PARSER_H
 
+#include <processor.h>
+
 #include <fstream>
 #include <regex>
 #include <string>
@@ -18,11 +20,16 @@ const std::string kVersionFilename{"/version"};
 const std::string kOSPath{"/etc/os-release"};
 const std::string kPasswordPath{"/etc/passwd"};
 
+//Proc/stat parsing
+void ProcStatParsin();
+
 // System
 float MemoryUtilization();
 long UpTime();
 std::vector<int> Pids();
+inline int totalProcesses;
 int TotalProcesses();
+inline int runningProcesses;
 int RunningProcesses();
 std::string OperatingSystem();
 std::string Kernel();
@@ -30,27 +37,33 @@ std::string Kernel();
 // CPU
 enum CPUStates {
   kUser_ = 0,
-  kNice_,
-  kSystem_,
-  kIdle_,
-  kIOwait_,
-  kIRQ_,
-  kSoftIRQ_,
-  kSteal_,
-  kGuest_,
-  kGuestNice_
+  kNice_ = 1,
+  kSystem_ = 2,
+  kIdle_ = 3,
+  kIOwait_ = 4,
+  kIRQ_ = 5,
+  kSoftIRQ_ = 6,
+  kSteal_ = 7,
+  kGuest_ = 8,
+  kGuestNice_ = 9
 };
-std::vector<std::string> CpuUtilization();
+inline PrevProcessor prevProcessor;
+inline std::vector<std::vector<std::string>> cpuUtilization;
+inline int cpuN;
+std::vector<std::vector<std::string>> CpuUtilization();
+
+inline long last_totaltime_;
+inline long last_uptime_;
+
 long Jiffies();
 long ActiveJiffies();
-long ActiveJiffies(int pid);
+std::vector<long> ActiveJiffies(int pid);
 long IdleJiffies();
-
 // Processes
 std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
-std::string User(int pid);
+std::string User(const std::string& uid);
 long int UpTime(int pid);
 };  // namespace LinuxParser
 
