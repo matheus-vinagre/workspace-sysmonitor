@@ -7,14 +7,13 @@
 class Processor {
  public:
   explicit Processor(const std::vector<std::string>& data);
-
   float Utilization();  // TODO: See src/processor.cpp
   float StringToFloat();
 
-    // TODO: Declare any necessary private members
+ // x TODO: Declare any necessary private members
 private:
   unsigned long long user_, nice_, system_, idle_, iowait_, irq_,
-                    softirq_, steal_, guest_, guest_nice_;
+                    softirq_, steal_, guest_, guest_nice_, cpunumber_;
 };
 class PrevProcessor {
  public:

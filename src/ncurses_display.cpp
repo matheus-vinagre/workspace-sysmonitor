@@ -32,11 +32,16 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   int row{0};
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
-  mvwprintw(window, ++row, 2, "CPU: ");
-  wattron(window, COLOR_PAIR(1));
-  mvwprintw(window, row, 10, "");
-  wprintw(window, ProgressBar(system.Cpu()[0].Utilization()).c_str());
-  wattroff(window, COLOR_PAIR(1));
+
+// Changed the original code for multiples cpu cores
+  for (size_t i = 0; i < 12; ++i) {
+    mvwprintw(window, ++row, 2, ("CPU " + std::to_string(i) + ": ").c_str());
+    wattron(window, COLOR_PAIR(1));
+    mvwprintw(window, row, 10, "");
+    wprintw(window, ProgressBar(system.Cpu()[i].Utilization()).c_str());
+    wattroff(window, COLOR_PAIR(1));
+  }
+
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
@@ -57,7 +62,7 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
   int row{0};
   int const pid_column{2};
   int const user_column{9};
-  int const cpu_column{16};
+  int const cpu_column{18};
   int const ram_column{26};
   int const time_column{35};
   int const command_column{46};
@@ -73,7 +78,7 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
   for (int i = 0; i < num_processes; ++i) {
     mvwprintw(window, ++row, pid_column, to_string(processes[i].Pid()).c_str());
     mvwprintw(window, row, user_column, processes[i].User().c_str());
-    float cpu = processes[i].CpuUtilization() * 100;
+    float cpu = processes[i].CpuUtilization(); // *100 original
     mvwprintw(window, row, cpu_column, to_string(cpu).substr(0, 4).c_str());
     mvwprintw(window, row, ram_column, processes[i].Ram().c_str());
     mvwprintw(window, row, time_column,
@@ -90,7 +95,7 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
-  WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
+  WINDOW* system_window = newwin(20, x_max - 1, 0, 0);
   WINDOW* process_window =
       newwin(3 + n, x_max - 1, getmaxy(system_window) + 1, 0);
 
@@ -99,7 +104,7 @@ void NCursesDisplay::Display(System& system, int n) {
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     box(system_window, 0, 0);
     box(process_window, 0, 0);
-    LinuxParser::ProcStatParsin(); //-------------******-----------------
+    LinuxParser::ProcStatParsin(); // Auxiliary function for parsing data
     DisplaySystem(system, system_window);
     DisplayProcesses(system.Processes(), process_window, n);
     wrefresh(system_window);

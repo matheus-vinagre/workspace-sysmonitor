@@ -1,12 +1,8 @@
 #include "processor.h"
-#include <dirent.h>
-#include <unistd.h>
 #include <string>
 #include <vector>
 #include <filesystem>
 #include <linux_parser.h>
-#include <iostream>
-#include <map>
 using std::stoull;
 using std::string;
 using std::to_string;
@@ -22,15 +18,17 @@ Processor::Processor(const std::vector<std::string>& data)
       softirq_(stoull(data[6])),
       steal_(stoull(data[7])),
       guest_(stoull(data[8])),
-      guest_nice_(stoull(data[9]))
+      guest_nice_(stoull(data[9])),
+      cpunumber_(stoull(data[10]))
       {}
 
 template <typename Type>
   Type Sub(Type a, Type b) { return (a > b ) ? ( a - b ): 0; }
 
 
-// TODO: Return the aggregate CPU utilization
+// x TODO: Return the aggregate CPU utilization
 float Processor::Utilization() {
+
   unsigned long long usertime = user_ - guest_;
   unsigned long long nicetime = nice_ - guest_nice_;
   unsigned long long idleAlltime = idle_ + iowait_;
@@ -38,37 +36,39 @@ float Processor::Utilization() {
   unsigned long long int virtalltime = guest_ + guest_nice_;
   unsigned long long totaltime =
       usertime + nicetime + systemAlltime + idleAlltime + steal_ + virtalltime;
-  PrevProcessor* prevProcessor = &LinuxParser::prevProcessor;
 
-  prevProcessor->set_user_period(Sub(usertime, prevProcessor->user_temp()));
-  prevProcessor->set_nice_period(Sub(nicetime, prevProcessor->nice_temp()));
-  prevProcessor->set_system_period(Sub(system_, prevProcessor->system_temp()));
-  prevProcessor->set_system_alltime_period(Sub(systemAlltime, prevProcessor->system_alltime_temp()));
-  prevProcessor->set_idle_alltime_period(Sub(idleAlltime, prevProcessor->idle_alltime_temp()));
-  prevProcessor->set_idle_period(Sub(idle_, prevProcessor->idle_temp()));
-  prevProcessor->set_iowait_period(Sub(iowait_, prevProcessor->iowait_temp()));
-  prevProcessor->set_irq_period(Sub(irq_, prevProcessor->irq_temp()));
-  prevProcessor->set_softirq_period(Sub(softirq_, prevProcessor->softirq_temp()));
-  prevProcessor->set_steal_period(Sub(steal_, prevProcessor->steal_temp()));
-  prevProcessor->set_guest_period(Sub(virtalltime, prevProcessor->guest_temp()));
-  prevProcessor->set_total_period(Sub(totaltime, prevProcessor->total_temp()));
+  vector<PrevProcessor> prevProcessor = LinuxParser::prevProcessor;
 
-  prevProcessor->set_user_temp(usertime);
-  prevProcessor->set_nice_temp(nicetime);
-  prevProcessor->set_system_temp(system_);
-  prevProcessor->set_system_alltime_temp(systemAlltime);
-  prevProcessor->set_idle_alltime_temp(idleAlltime);
-  prevProcessor->set_idle_temp(idle_);
-  prevProcessor->set_iowait_temp(iowait_);
-  prevProcessor->set_irq_temp(irq_);
-  prevProcessor->set_softirq_temp(softirq_);
-  prevProcessor->set_steal_temp(steal_);
-  prevProcessor->set_guest_temp(virtalltime);
-  prevProcessor->set_total_temp(totaltime);
+  prevProcessor[cpunumber_].set_user_period(Sub(usertime, prevProcessor[cpunumber_].user_temp()));
+  prevProcessor[cpunumber_].set_nice_period(Sub(nicetime, prevProcessor[cpunumber_].nice_temp()));
+  prevProcessor[cpunumber_].set_system_period(Sub(system_, prevProcessor[cpunumber_].system_temp()));
+  prevProcessor[cpunumber_].set_system_alltime_period(Sub(systemAlltime, prevProcessor[cpunumber_].system_alltime_temp()));
+  prevProcessor[cpunumber_].set_idle_alltime_period(Sub(idleAlltime, prevProcessor[cpunumber_].idle_alltime_temp()));
+  prevProcessor[cpunumber_].set_idle_period(Sub(idle_, prevProcessor[cpunumber_].idle_temp()));
+  prevProcessor[cpunumber_].set_iowait_period(Sub(iowait_, prevProcessor[cpunumber_].iowait_temp()));
+  prevProcessor[cpunumber_].set_irq_period(Sub(irq_, prevProcessor[cpunumber_].irq_temp()));
+  prevProcessor[cpunumber_].set_softirq_period(Sub(softirq_, prevProcessor[cpunumber_].softirq_temp()));
+  prevProcessor[cpunumber_].set_steal_period(Sub(steal_, prevProcessor[cpunumber_].steal_temp()));
+  prevProcessor[cpunumber_].set_guest_period(Sub(virtalltime, prevProcessor[cpunumber_].guest_temp()));
+  prevProcessor[cpunumber_].set_total_period(Sub(totaltime, prevProcessor[cpunumber_].total_temp()));
 
-  float util = (prevProcessor->total_period() - prevProcessor->idle_alltime_period())
+  prevProcessor[cpunumber_].set_user_temp(usertime);
+  prevProcessor[cpunumber_].set_nice_temp(nicetime);
+  prevProcessor[cpunumber_].set_system_temp(system_);
+  prevProcessor[cpunumber_].set_system_alltime_temp(systemAlltime);
+  prevProcessor[cpunumber_].set_idle_alltime_temp(idleAlltime);
+  prevProcessor[cpunumber_].set_idle_temp(idle_);
+  prevProcessor[cpunumber_].set_iowait_temp(iowait_);
+  prevProcessor[cpunumber_].set_irq_temp(irq_);
+  prevProcessor[cpunumber_].set_softirq_temp(softirq_);
+  prevProcessor[cpunumber_].set_steal_temp(steal_);
+  prevProcessor[cpunumber_].set_guest_temp(virtalltime);
+  prevProcessor[cpunumber_].set_total_temp(totaltime);
+
+  float utilization = (prevProcessor[cpunumber_].total_period() - prevProcessor[cpunumber_].idle_alltime_period())
                   / 1000.0;
-  return util;
+  LinuxParser::prevProcessor[cpunumber_] = prevProcessor[cpunumber_];
+  return utilization;
 }
 
 

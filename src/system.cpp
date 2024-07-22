@@ -1,13 +1,9 @@
 #include "system.h"
-
 #include <linux_parser.h>
-#include <unistd.h>
-
 #include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
-
 #include "process.h"
 #include "processor.h"
 
@@ -17,19 +13,20 @@ using std::string;
 using std::vector;
 
 // x TODO: Return the system's CPU//
-vector<Processor> System::Cpu() {
+vector<Processor>& System::Cpu() {
   vector<vector<string>> cpu = LinuxParser::CpuUtilization();
-  cpu_.reserve(LinuxParser::cpuN);
+  vector<Processor> cpu_temp;
+  cpu_temp.reserve(LinuxParser::cpuN);
   for(const auto& core : cpu) {
     Processor processor(core);
-    cpu_.emplace_back(processor);
+    cpu_temp.emplace_back(processor);
   }
-  vector<Processor> cpu_temp = cpu_;
-  cpu_.clear();
-  return cpu_temp;
+  cpu_ = cpu_temp;
+  cpu_temp.clear();
+  return cpu_;
 }
 
-// TODO: Return a container composed of the system's processes
+// x TODO: Return a container composed of the system's processes
 vector<Process>& System::Processes() {
   vector<int> pids = LinuxParser::Pids();
   vector<Process> temp_processes;
@@ -60,4 +57,4 @@ int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
 int System::TotalProcesses() { return processes_.size(); }
 
 // X TODO: Return the number of seconds since the system started running
-long int System::UpTime() { return LinuxParser::UpTime(); }
+long System::UpTime() { return LinuxParser::UpTime(); }

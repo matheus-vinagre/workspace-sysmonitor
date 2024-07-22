@@ -2,10 +2,10 @@
 #define SYSTEM_PARSER_H
 
 #include <processor.h>
-
-#include <fstream>
+#include <process.h>
 #include <regex>
 #include <string>
+
 
 namespace LinuxParser {
 // Paths
@@ -45,21 +45,20 @@ enum CPUStates {
   kSoftIRQ_ = 6,
   kSteal_ = 7,
   kGuest_ = 8,
-  kGuestNice_ = 9
+  kGuestNice_ = 9,
+  kCpuNumber = 10
 };
-inline PrevProcessor prevProcessor;
+inline std::vector<PrevProcessor> prevProcessor(13);
 inline std::vector<std::vector<std::string>> cpuUtilization;
 inline int cpuN;
 std::vector<std::vector<std::string>> CpuUtilization();
 
-inline long last_totaltime_;
-inline long last_uptime_;
-
+// Processes
+inline std::vector<Process> prevProcesses;
 long Jiffies();
 long ActiveJiffies();
 std::vector<long> ActiveJiffies(int pid);
 long IdleJiffies();
-// Processes
 std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
