@@ -34,7 +34,8 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
 
 // Changed the original code for multiples cpu cores
-  for (size_t i = 0; i < 12; ++i) {
+  size_t cpuCount = system.Cpu().size();
+  for (size_t i = 0; i < cpuCount; ++i) {
     mvwprintw(window, ++row, 2, ("CPU " + std::to_string(i) + ": ").c_str());
     wattron(window, COLOR_PAIR(1));
     mvwprintw(window, row, 10, "");
@@ -95,7 +96,8 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
-  WINDOW* system_window = newwin(20, x_max - 1, 0, 0);
+  int cpuCount = system.Cpu().size();
+  WINDOW* system_window = newwin(8+cpuCount, x_max - 1, 0, 0);
   WINDOW* process_window =
       newwin(3 + n, x_max - 1, getmaxy(system_window) + 1, 0);
 

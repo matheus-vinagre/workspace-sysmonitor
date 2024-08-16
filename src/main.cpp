@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iostream>
 using std::stof;
 using std::string;
@@ -13,7 +13,7 @@ using std::vector;
 #include "system.h"
 
 int main() {
-
+  LinuxParser::ProcStatParsin();
   System system;
   NCursesDisplay::Display(system);
 }

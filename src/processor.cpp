@@ -1,7 +1,7 @@
 #include "processor.h"
 #include <string>
 #include <vector>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <linux_parser.h>
 using std::stoull;
 using std::string;
@@ -36,6 +36,10 @@ float Processor::Utilization() {
   unsigned long long int virtalltime = guest_ + guest_nice_;
   unsigned long long totaltime =
       usertime + nicetime + systemAlltime + idleAlltime + steal_ + virtalltime;
+
+  if(LinuxParser::prevProcessor.empty() ){
+    LinuxParser::InitializePrevProcessor(15);
+  }
 
   vector<PrevProcessor> prevProcessor = LinuxParser::prevProcessor;
 

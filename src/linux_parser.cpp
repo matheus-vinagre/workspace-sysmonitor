@@ -2,8 +2,10 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fstream>
-#include <filesystem>
+#include <experimental/filesystem>
+#include <boost/filesystem.hpp>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <vector>
@@ -13,6 +15,20 @@ using std::to_string;
 using std::vector;
 
 // Parse everything I need from proc/stat
+namespace LinuxParser{
+	int totalProcesses;
+  	int runningProcesses;
+ 	std::vector<PrevProcessor> prevProcessor;
+	std::vector<std::vector<std::string>> cpuUtilization;
+	int cpuN;
+  	std::vector<Process> prevProcesses;
+}
+
+int LinuxParser::CpuN() { return cpuN; }
+void LinuxParser::InitializePrevProcessor(int N) {
+  LinuxParser::prevProcessor.resize(N); // Resize the vector based on the value of N
+}
+
 void LinuxParser::ProcStatParsin() {
   vector<string> cpuData(11);
   string s_totalProcesses, s_runningProcesses;
@@ -106,24 +122,28 @@ string LinuxParser::Kernel() {
 }
 */
 // New code filesystem
-bool is_digits(string& str)
-{
-  return all_of(str.begin(), str.end(), ::isdigit);
+namespace fs = boost::filesystem;
+bool is_digits(const std::string& str) {
+    return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
 }
 
-vector<int> LinuxParser::Pids() {
-  vector<int> pids;
-  std::filesystem::path dirpath = kProcDirectory;
-  for(const auto& entry : std::filesystem::directory_iterator(dirpath)) {
-    if(entry.is_directory()) {
-      string dirName = entry.path().filename();
-      if(is_digits(dirName)){
-        int pid = std::stoi(dirName);
-        pids.push_back(pid);
-      }
+// Function to list process IDs
+std::vector<int> LinuxParser::Pids() {
+    std::vector<int> pids;
+    const fs::path dirpath = "/proc"; // Update with your directory path
+
+    // Iterate over the directory entries
+    for (fs::directory_iterator it(dirpath); it != fs::directory_iterator(); ++it) {
+        if (fs::is_directory(it->path())) { // Use fs::is_directory to check if it's a directory
+            std::string dirName = it->path().filename().string();
+            if (is_digits(dirName)) {
+                int pid = std::stoi(dirName);
+                pids.push_back(pid);
+            }
+        }
     }
-  }
-  return pids;
+
+    return pids;
 }
 
 // x TODO: Read and return the system memory utilization
@@ -267,10 +287,22 @@ int LinuxParser::RunningProcesses() { return runningProcesses;}
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) {
   string spid = to_string(pid);
-  std::ifstream filestream(LinuxParser::kProcDirectory + spid +
-                           LinuxParser::kCmdlineFilename);
+  std::ifstream filestream(LinuxParser::kProcDirectory + spid + LinuxParser::kCmdlineFilename);
   string line;
-  std::getline(filestream, line);
+
+  if (filestream.is_open()) {
+    if (std::getline(filestream, line)) {
+      // Successfully read the line
+      if (line.empty()) {
+        std::cerr << "Warning: Command line for PID " << pid << " is empty." << std::endl;
+      }
+    } else {
+      std::cerr << "Error: Could not read the command line for PID " << pid << std::endl;
+    }
+  } else {
+    std::cerr << "Error: Could not open file for PID " << pid << std::endl;
+  }
+
   return line;
 }
 
@@ -333,6 +365,7 @@ string LinuxParser::User(const string& uid) {
   return "error";
 }
 
+bool operator==(const string& lhs, long rhs);
 // x TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
@@ -346,6 +379,9 @@ long LinuxParser::UpTime(int pid) {
     for(int i=0; i<22;++i ) {
       linestream >> data;
     }
+  }
+  if (data == "") {
+    return 0;
   }
   long p_uptime = std::stol(data) / sysconf(_SC_CLK_TCK);
   long s_uptime = UpTime();
