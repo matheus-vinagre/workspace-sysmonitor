@@ -62,3 +62,16 @@
 2	468	1721765878514735965	CMakeFiles/monitor.dir/src/processor.cpp.o	78f846a6bde26f99
 3	1021	1721765933283478038	CMakeFiles/monitor.dir/src/linux_parser.cpp.o	fe0c99b5f58924ef
 1021	1088	1721765933351478959	monitor	aab32b48aa3c9e8a
+4	503	1724109394798977521	CMakeFiles/monitor.dir/src/process.cpp.o	557bdfa35b5923f1
+4	527	1724109394822977820	CMakeFiles/monitor.dir/src/ncurses_display.cpp.o	9b780118de57157d
+4	600	1724109394894978711	CMakeFiles/monitor.dir/src/processor.cpp.o	78f846a6bde26f99
+5	671	1724109394966979608	CMakeFiles/monitor.dir/src/system.cpp.o	bc00db70c26bec06
+4	678	1724109394974979706	CMakeFiles/monitor.dir/src/main.cpp.o	60b8415784a4525c
+4	1187	1724109395482986013	CMakeFiles/monitor.dir/src/linux_parser.cpp.o	fe0c99b5f58924ef
+1187	1267	1724109395562987006	monitor	aab32b48aa3c9e8a
+3	1041	1724109617729745158	CMakeFiles/monitor.dir/src/linux_parser.cpp.o	fe0c99b5f58924ef
+1041	1118	1724109617805746103	monitor	aab32b48aa3c9e8a
+3	1059	1724109638874007660	CMakeFiles/monitor.dir/src/linux_parser.cpp.o	fe0c99b5f58924ef
+1059	1128	1724109638942008507	monitor	aab32b48aa3c9e8a
+4	1126	1724109733835186585	CMakeFiles/monitor.dir/src/linux_parser.cpp.o	fe0c99b5f58924ef
+1126	1196	1724109733907187478	monitor	aab32b48aa3c9e8a

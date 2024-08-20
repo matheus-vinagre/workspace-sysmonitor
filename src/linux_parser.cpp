@@ -137,7 +137,11 @@ std::vector<int> LinuxParser::Pids() {
         if (fs::is_directory(it->path())) { // Use fs::is_directory to check if it's a directory
             std::string dirName = it->path().filename().string();
             if (is_digits(dirName)) {
+
                 int pid = std::stoi(dirName);
+                if(pid == 2) {
+                  int a = 0;
+                }
                 pids.push_back(pid);
             }
         }
@@ -289,7 +293,9 @@ string LinuxParser::Command(int pid) {
   string spid = to_string(pid);
   std::ifstream filestream(LinuxParser::kProcDirectory + spid + LinuxParser::kCmdlineFilename);
   string line;
-
+  if(pid == 2 ) {
+    int a =0;
+  }
   if (filestream.is_open()) {
     if (std::getline(filestream, line)) {
       // Successfully read the line
